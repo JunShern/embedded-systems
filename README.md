@@ -18,6 +18,10 @@ Group coursework for EE3-24 Embedded Systems at Imperial College London
 `sudo ampy -p /dev/ttyUSB0 -b 115200 put main.py`
 *The `put` command loads the program onto the board but doesn't run it; the correct command for running files is actually `run` but `run` was found to cause errors so use `put` for best results. To view debug and print output, need to use `screen` to talk to the board after the program has been loaded.*
 
+### MQTT Communication Resources
+[MQTT overview](http://www.hivemq.com/blog/mqtt-essentials-part-3-client-broker-connection-establishment)
+[Installation and setup](http://www.switchdoc.com/2016/02/tutorial-installing-and-testing-mosquitto-mqtt-on-raspberry-pi/)
+
 ### Other resources
 
 (Can skip this step since MicroPython is already on the Huzzah’s ESP) 
