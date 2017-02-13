@@ -26,7 +26,7 @@ Group coursework for EE3-24 Embedded Systems at Imperial College London
 
 (Can skip this step since MicroPython is already on the Huzzah’s ESP) 
 
-Flash MicroPython firmware onto ESP8266 - [link](https://docs.micropython.org/en/latest/esp8266/esp8266/tutorial/intro.html) (need to determine USB dev path using this)
+Flash MicroPython firmware onto ESP8266 - [link](https://docs.micropython.org/en/latest/esp8266/esp8266/tutorial/intro.html) (need to determine USB dev path using [this](http://unix.stackexchange.com/questions/144029/command-to-determine-ports-of-a-device-like-dev-ttyusb0))
 
 (Can skip this step too)
 
