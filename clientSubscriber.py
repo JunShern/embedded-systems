@@ -4,7 +4,7 @@ import paho.mqtt.client as mqtt
 
 def on_connect(client, userdata, flags, rc):
     print("Connected with result code "+str(rc))
-    client.subscribe("#")
+    client.subscribe("esys/FourMusketeers")
 
 def on_message(client, userdata, msg):
     print(msg.payload.decode())
