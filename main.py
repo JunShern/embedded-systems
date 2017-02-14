@@ -50,7 +50,7 @@ broker_addr = '192.168.0.10'
 # broker_addr = '129.31.230.192'
 client = MQTTClient(machine.unique_id(), broker_addr)
 client.connect()
-client.publish(b"esys/FourMusketeers", bytes('HELLO','utf-8'))
+client.publish("esys/FourMusketeers", bytes('Greetings','utf-8'))
 
 
 ## Initialize button
@@ -100,20 +100,22 @@ while (True):
 	sumDiff = sum(diff)
 	angleValueWithCalibration = sumDiff - angleDiff180
 
+	angleThreshold = 50
 	## Check for change in door state
-	if (angleValueWithCalibration > 100 and doorIsOpen==False) :
+	if (abs(angleValueWithCalibration) > angleThreshold and doorIsOpen==False) :
 		doorIsOpen = True
 		print("Door opened!")
-		client.publish(b"esys/FourMusketeers", bytes("Door opened!",'utf-8'))
-	elif (angleValueWithCalibration < 100 and doorIsOpen==True) :
+		client.publish("esys/FourMusketeers", bytes("Door opened!",'utf-8'))
+	elif (abs(angleValueWithCalibration) < angleThreshold and doorIsOpen==True) :
 		doorIsOpen = False
 		print("Door closed!")
-		client.publish(b"esys/FourMusketeers", bytes("Door closed!",'utf-8'))
+		client.publish("esys/FourMusketeers", bytes("Door closed!",'utf-8'))
 
 	## Calibrate reading for sensors at 180 degree position
 	if (calibrationOn == True): 
 		angleDiff180 = sumDiff
 		print("Calibrating 180 degrees at %s" %angleDiff180)
+		client.publish("esys/FourMusketeers", bytes("Calibrating",'utf-8'))
 		calibrationOn = False
 
 	# print(angleValueWithCalibration)
