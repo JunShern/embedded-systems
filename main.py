@@ -14,7 +14,6 @@ def do_connect(essid, password):
 		while not sta_if.isconnected(): 
 			pass # Loop until we connect     
 
-
 def concatBytes(msb, lsb):
 	return int((msb << 8) + lsb)
 
@@ -40,6 +39,10 @@ def buttonCallback(p):
 	calibrationOn = True
 	print("Pin change", p)
 
+def printAndPublish(msg):
+	print(msg)
+	client.publish("esys/FourMusketeers", bytes(msg,'utf-8'))
+
 ## Connect to wifi
 wifi_essid = "EEERover"
 wifi_password = "exhibition"
@@ -51,7 +54,6 @@ broker_addr = '192.168.0.10'
 client = MQTTClient(machine.unique_id(), broker_addr)
 client.connect()
 client.publish("esys/FourMusketeers", bytes('Greetings','utf-8'))
-
 
 ## Initialize button
 buttonPin = Pin(0, Pin.IN)
@@ -104,18 +106,15 @@ while (True):
 	## Check for change in door state
 	if (abs(angleValueWithCalibration) > angleThreshold and doorIsOpen==False) :
 		doorIsOpen = True
-		print("Door opened!")
-		client.publish("esys/FourMusketeers", bytes("Door opened!",'utf-8'))
+		printAndPublish("OPEN")
 	elif (abs(angleValueWithCalibration) < angleThreshold and doorIsOpen==True) :
 		doorIsOpen = False
-		print("Door closed!")
-		client.publish("esys/FourMusketeers", bytes("Door closed!",'utf-8'))
+		printAndPublish("CLOSED")
 
 	## Calibrate reading for sensors at 180 degree position
 	if (calibrationOn == True): 
 		angleDiff180 = sumDiff
-		print("Calibrating 180 degrees at %s" %angleDiff180)
-		client.publish("esys/FourMusketeers", bytes("Calibrating",'utf-8'))
+		printAndPublish("Calibrating %s" %angleDiff180)
 		calibrationOn = False
 
 	# print(angleValueWithCalibration)
