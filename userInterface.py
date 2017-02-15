@@ -14,6 +14,7 @@ def on_connect(client, userdata, flags, rc):
 
 def on_message(client, userdata, msg):
     global doorState
+    global msgList
     message = (msg.payload.decode())
     msgObject = ujson.loads(message)
     try:
@@ -23,8 +24,13 @@ def on_message(client, userdata, msg):
         	doorState = 1
         elif (msgObject['doorState'] == 0):
         	doorState = 0
-    except ValueError:
+    except ValueError: 
         print("Expected JSON string with keys 'timeString' and 'doorState'")
+
+    ## Update msgList for log of messages
+    msgList.append(msgObject)
+    while (len(msgList)>5): msgList.pop(0)
+
     # Update graphics
     updateGraphics()
 
@@ -49,14 +55,34 @@ def drawDoorState(doorOpen):
     return
 
 def drawMessageLog():
+    lineIndex = 0
+    for msgObj in msgList:
+        ## Create log string
+        textString = msgObj['timeString']
+        if (msgObj['doorState'] == 1):
+            textString = textString + " : Door opened."
+        elif (msgObj['doorState'] == 0):
+            textString = textString + " : Door closed."
+        else:
+            textString = textString + " : There's something strange, in the neighborhood."
+        ## Draw log string
+        text = pFont.render(textString, 1, (255,255,255))
+        w,h = pFont.size(textString)
+        screen.blit(text, (10, height - (2*h)*(1+lineIndex)) )
+
+        lineIndex += 1
     return
+
+pygame.init()
 
 ## Global variables
 doorState = 0
-
+msgList = list()
+pFont = pygame.font.SysFont("monospace", 16)
 ## Graphics / UI
-pygame.init()
-size = (500, 700)
+width = 500
+height = 700
+size = (width, height)
 screen = pygame.display.set_mode(size)
 pygame.display.set_caption("IoT Home Security")
 updateGraphics()

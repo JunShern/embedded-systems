@@ -32,6 +32,4 @@ client = mqtt.Client()
 broker_addr = 'localhost'
 client.connect(broker_addr,1883,60)
 
-# client.publish("esys/FourMusketeers", "OPEN")
-# client.publish("esys/FourMusketeers", "CLOSE")
 # client.disconnect()
