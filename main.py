@@ -4,6 +4,46 @@ import network
 from umqtt.simple import MQTTClient
 import machine
 from machine import Pin, I2C
+import time
+
+class MessageObject(object):
+	def __init__(self, doorState):
+		self.timeString = getTimeAsString()
+		self.doorState = doorState
+
+class GenericMsgObject(object):
+	def __init__(self, textString):
+		self.timeString = getTimeAsString()
+		self.textString = textString
+
+def getTimeAsString():
+	# Returns time as DD/MM/YYYY - HH:MM:SS 
+	t = time.localtime()
+	timeString = ("%02d/%02d/%04d - %02d:%02d:%02d"
+		%(t[2], t[1], t[0], t[3], t[4], t[5]))
+	return timeString
+
+def jsonify(msgObj):
+	jsonString = '{"'
+	if ('textString' in dir(msgObj) and 'timeString' in dir(msgObj)):
+		jsonString += 'textString": "' + msgObj.textString + '", "timeString": "' + msgObj.timeString + '"}'
+	elif ('doorState' in dir(msgObj) and 'timeString' in dir(msgObj)):
+		jsonString += 'doorState": "' + str(msgObj.doorState) + '", "timeString": "' + msgObj.timeString + '"}'
+	else:
+		jsonString += 'textString": "Unexpected object in JSONify", "timeString": "' + msgObj.timeString + '"}'
+	return jsonString
+
+def sendDoorChangeMessage(doorIsOpen):
+	msg = MessageObject(int(doorIsOpen))
+	print(jsonify(msg))
+	client.publish("esys/FourMusketeers", jsonify(msg))
+
+def sendGenericMessage(textString):
+	msg = GenericMsgObject(textString)
+	print(msg)
+	print(jsonify(msg))
+	print("")
+	client.publish("esys/FourMusketeers", jsonify(msg))	
 
 def do_connect(essid, password):
 	sta_if = network.WLAN(network.STA_IF)
@@ -39,9 +79,6 @@ def buttonCallback(p):
 	calibrationOn = True
 	print("Pin change", p)
 
-def printAndPublish(msg):
-	print(msg)
-	client.publish("esys/FourMusketeers", bytes(msg,'utf-8'))
 
 ## Connect to wifi
 wifi_essid = "EEERover"
@@ -53,7 +90,7 @@ broker_addr = '192.168.0.10'
 # broker_addr = '129.31.230.192'
 client = MQTTClient(machine.unique_id(), broker_addr)
 client.connect()
-client.publish("esys/FourMusketeers", bytes('Greetings','utf-8'))
+sendGenericMessage("Greetings")
 
 ## Initialize button
 buttonPin = Pin(0, Pin.IN)
@@ -87,6 +124,7 @@ i2c_1.writeto_mem(addr1, configRegA, b'\x10')
 i2c_2.writeto_mem(addr2, configRegA, b'\x10')
 print("Finished configuration")
 
+angleValueWithCalibrationList = list()
 ## Continuously read sensor data
 while (True):
 	## Read sensor data
@@ -101,20 +139,23 @@ while (True):
 	diff = (x1-x2, y1-y2, z1-z2)
 	sumDiff = sum(diff)
 	angleValueWithCalibration = sumDiff - angleDiff180
+	angleValueWithCalibrationList.append(abs(angleValueWithCalibration))
+	averagedAngleValue = sum(angleValueWithCalibrationList) / len(angleValueWithCalibrationList)
+	while (len(angleValueWithCalibrationList)>10): angleValueWithCalibrationList.pop(0)
 
-	angleThreshold = 50
+	angleThreshold = 10
 	## Check for change in door state
-	if (abs(angleValueWithCalibration) > angleThreshold and doorIsOpen==False) :
+	if (averagedAngleValue > angleThreshold and doorIsOpen==False) :
 		doorIsOpen = True
-		printAndPublish("OPEN")
-	elif (abs(angleValueWithCalibration) < angleThreshold and doorIsOpen==True) :
+		sendDoorChangeMessage(doorIsOpen)
+	elif (averagedAngleValue < angleThreshold and doorIsOpen==True) :
 		doorIsOpen = False
-		printAndPublish("CLOSED")
+		sendDoorChangeMessage(doorIsOpen)
 
 	## Calibrate reading for sensors at 180 degree position
 	if (calibrationOn == True): 
 		angleDiff180 = sumDiff
-		printAndPublish("Calibrating %s" %angleDiff180)
+		sendGenericMessage("Calibrating %s" %angleDiff180)
 		calibrationOn = False
 
 	# print(angleValueWithCalibration)
