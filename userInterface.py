@@ -16,12 +16,15 @@ def on_message(client, userdata, msg):
     global doorState
     message = (msg.payload.decode())
     msgObject = ujson.loads(message)
-    print(msgObject['timeString'])
-    if (msgObject['doorState'] == "OPEN"):
-    	doorState = 1
-    elif (msgObject['doorState'] == "CLOSE"):
-    	doorState = 0
-
+    try:
+        print(msgObject['timeString'])
+        print(msgObject['doorState'])
+        if (msgObject['doorState'] == 1):
+        	doorState = 1
+        elif (msgObject['doorState'] == 0):
+        	doorState = 0
+    except ValueError:
+        print("Expected JSON string with keys 'timeString' and 'doorState'")
     # Update graphics
     updateGraphics()
 
