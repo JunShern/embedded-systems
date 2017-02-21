@@ -12,11 +12,12 @@ Group coursework for EE3-24 Embedded Systems at Imperial College London
 
 ### Running the program
 
-1. Create a Python file to run on the device (e.g. main.py - this special name will boot everytime the board is reset)
-
-2. Use ampy to load the file in:
+1. Use ampy to load the firmware onto the board:
 `sudo ampy -p /dev/ttyUSB0 -b 115200 put main.py`
 *The `put` command loads the program onto the board but doesn't run it; the correct command for running files is actually `run` but `run` was found to cause errors so use `put` for best results. To view debug and print output, need to use `screen` to talk to the board after the program has been loaded.*
+
+2. Make sure your computer is connected to the appropriate broker's network (according to the broker IP address in userInterface.py), then run the user interface using:
+`python userInterface.py`
 
 ### MQTT Communication Resources
 [MQTT overview](http://www.hivemq.com/blog/mqtt-essentials-part-3-client-broker-connection-establishment)
